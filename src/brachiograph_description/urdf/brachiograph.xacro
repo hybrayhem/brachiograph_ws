@@ -1,0 +1,120 @@
+<?xml version="1.0" ?>
+<robot name="brachiograph" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<xacro:include filename="$(find brachiograph_description)/urdf/materials.xacro" />
+<xacro:include filename="$(find brachiograph_description)/urdf/brachiograph.trans" />
+<xacro:include filename="$(find brachiograph_description)/urdf/brachiograph.gazebo" />
+
+<link name="world" />
+<joint name="virtual_joint" type="fixed">
+  <parent link="world"/>
+  <child link="base_link"/>
+  <origin rpy="0 0 0" xyz="0 0 0"/>
+</joint>
+
+<link name="base_link">
+  <inertial>
+    <origin xyz="0.002038734351763583 0.6163329250273015 0.13019136686713387" rpy="0 0 0"/>
+    <mass value="94.55629235069185"/>
+    <inertia ixx="3.586818" iyy="-11.784401" izz="-9.34816" ixy="-6.30954" iyz="0.868916" ixz="-1.087526"/>
+  </inertial>
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://brachiograph_description/meshes/base_link.stl"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://brachiograph_description/meshes/base_link.stl"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="arm_inner">
+  <inertial>
+    <origin xyz="0.0007776176557930947 -0.5706676824649911 -0.05236239386525232" rpy="0 0 0"/>
+    <mass value="56.23217141870967"/>
+    <inertia ixx="8.305523" iyy="0.732315" izz="7.651352" ixy="0.00165" iyz="-1.334231" ixz="0.000662"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.054 -0.473 -0.34" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://brachiograph_description/meshes/arm_inner.stl"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.054 -0.473 -0.34" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://brachiograph_description/meshes/arm_inner.stl"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="arm_outer">
+  <inertial>
+    <origin xyz="-0.4932433657827786 0.015946089239345485 -0.22633452294992504" rpy="0 0 0"/>
+    <mass value="179.1806897234528"/>
+    <inertia ixx="1.873827" iyy="30.244521" izz="29.062283" ixy="0.115055" iyz="-0.057468" ixz="-3.912259"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.054001 0.327 -0.34" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://brachiograph_description/meshes/arm_outer.stl"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.054001 0.327 -0.34" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://brachiograph_description/meshes/arm_outer.stl"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="lifter">
+  <inertial>
+    <origin xyz="0.0024768062869799934 -0.06066608676406571 0.1699123800664735" rpy="0 0 0"/>
+    <mass value="17.339728310347706"/>
+    <inertia ixx="0.341809" iyy="0.178232" izz="0.168295" ixy="-0.000501" iyz="0.0869" ixz="0.000712"/>
+  </inertial>
+  <visual>
+    <origin xyz="1.034011 0.327519 0.016978" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://brachiograph_description/meshes/lifter.stl"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="1.034011 0.327519 0.016978" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="package://brachiograph_description/meshes/lifter.stl"/>
+    </geometry>
+  </collision>
+</link>
+
+<joint name="joint1" type="continuous">
+  <origin xyz="0.054 0.473 0.34" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="arm_inner"/>
+  <axis xyz="0.0 0.0 1.0"/>
+</joint>
+
+<joint name="joint2" type="continuous">
+  <origin xyz="1e-06 -0.8 0.0" rpy="0 0 0"/>
+  <parent link="arm_inner"/>
+  <child link="arm_outer"/>
+  <axis xyz="-0.0 0.0 -1.0"/>
+</joint>
+
+<joint name="joint3" type="continuous">
+  <origin xyz="-1.088012 -0.000519 -0.356978" rpy="0 0 0"/>
+  <parent link="arm_outer"/>
+  <child link="lifter"/>
+  <axis xyz="-1.0 -0.0 0.0"/>
+</joint>
+
+</robot>
