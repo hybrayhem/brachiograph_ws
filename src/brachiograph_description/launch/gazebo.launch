@@ -1,11 +1,18 @@
 <launch>
-  <param name="robot_description" command="$(find xacro)/xacro $(find brachiograph_description)/urdf/brachiograph.xacro"/>
-  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model brachiograph"/>
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="paused" value="true"/>
+    <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
     <arg name="gui" value="true"/>
     <arg name="headless" value="false"/>
     <arg name="debug" value="false"/>
   </include>
+
+  <!-- Load the URDF into the ROS Parameter Server -->
+  <param name="robot_description"
+    command="$(find xacro)/xacro --inorder '$(find brachiograph_description)/urdf/brachiograph.xacro'" />
+  
+  <!-- Call spawn_model service from gazebo_ros to spawn a URDF robot -->
+  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+    args="-urdf -model brachiograph -param robot_description"/>
+    
 </launch>
