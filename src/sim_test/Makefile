@@ -17,16 +17,22 @@ TARGETS = $(SRCS:.cpp=)
 # FIRST_SRC := $(firstword $(wildcard $(SRCS))) # first item of SRCS
 # TARGET := $(basename $(FIRST_SRC)) # remove .cpp extension
 
-# Build targets
-all: $(TARGETS)
+# Build directory
+BUILD_DIR = build
 
-$(TARGETS): %: %.o
-	$(CXX) $(CXXFLAGS) -o $@ $<
+# Build targets
+all: $(BUILD_DIR) $(TARGETS)
+
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+$(TARGETS): %: $(BUILD_DIR)/%.o
+	$(CXX) $(CXXFLAGS) -o $(BUILD_DIR)/$@ $<
 
 # Compile source files
-%.o: %.cpp
+$(BUILD_DIR)/%.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Clean
 clean:
-	rm -f $(OBJS) $(TARGETS)
+	rm -rf $(BUILD_DIR) $(OBJS) $(TARGETS)

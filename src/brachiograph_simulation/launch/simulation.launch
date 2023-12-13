@@ -6,6 +6,6 @@
   <include file="$(find brachiograph_description)/launch/controller.launch"/>
 
   <!-- Run joint controller program -->
-  <node name="joint_controller" pkg="brachiograph_simulation" type="joint_controller" output="screen"/>
+  <!-- <node name="joint_controller" pkg="brachiograph_simulation" type="joint_controller" output="screen"/> -->
 
 </launch>

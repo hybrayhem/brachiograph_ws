@@ -1,10 +1,8 @@
 #include <iostream>
-#include <fstream>
-#include <cstring>
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <signal.h>
 
 struct PositionCommand {
     double joint1;

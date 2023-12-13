@@ -1,7 +1,7 @@
+#include <iostream>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <iostream>
 #include <signal.h>
 
 struct PositionCommand {
@@ -31,6 +31,11 @@ int main() {
     while (true) {
         write(fifoFd, &message, sizeof(message));
         usleep(100000); // 100ms
+
+        std::cout << "PositionCommand Sent: " 
+            << message.joint1 << ", " 
+            << message.joint2 << ", " 
+            << message.joint3 << std::endl;
 
         message = nextMessage(message);
     }
