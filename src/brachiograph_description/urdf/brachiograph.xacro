@@ -101,6 +101,7 @@
     <parent link="base_link"/>
     <child link="arm_inner"/>
     <axis xyz="0.0 0.0 1.0"/>
+    <limit effort="100" lower="${-pi}" upper="${pi}" velocity="1.0"/>
   </joint>
 
   <joint name="joint2" type="continuous">
@@ -108,6 +109,7 @@
     <parent link="arm_inner"/>
     <child link="arm_outer"/>
     <axis xyz="-0.0 0.0 -1.0"/>
+    <limit effort="100" lower="${-pi}" upper="${pi}" velocity="1.0"/>
   </joint>
 
   <joint name="joint3" type="continuous">
@@ -115,6 +117,7 @@
     <parent link="arm_outer"/>
     <child link="lifter"/>
     <axis xyz="-1.0 -0.0 0.0"/>
+    <limit effort="100" lower="${-pi}" upper="${pi}" velocity="1.0"/>
   </joint>
 
 </robot>
