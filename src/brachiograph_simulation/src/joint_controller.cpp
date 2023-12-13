@@ -7,15 +7,9 @@ struct PositionCommand {
     double joint3;
 };
 
-double deg2rad(double degrees) {
-    return degrees * M_PI / 180.0;
-}
+double deg2rad(double);
+void publishJointPosition(ros::Publisher, double);
 
-void publishJointPosition(ros::Publisher pub, double degrees) {
-    std_msgs::Float64 msg;
-    msg.data = deg2rad(degrees); // convert to radians
-    pub.publish(msg);
-}
 
 int main(int argc, char **argv)
 {
@@ -45,4 +39,15 @@ int main(int argc, char **argv)
     }
 
     return 0;
+}
+
+
+double deg2rad(double degrees) {
+    return degrees * M_PI / 180.0;
+}
+
+void publishJointPosition(ros::Publisher pub, double degrees) {
+    std_msgs::Float64 msg;
+    msg.data = deg2rad(degrees); // convert to radians
+    pub.publish(msg);
 }
