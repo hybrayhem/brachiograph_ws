@@ -7,8 +7,8 @@
 #include <string.h>
 #include <arpa/inet.h>
 // ROS
-#include <ros/ros.h>
-#include <std_msgs/Float64.h>
+#include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/float64.hpp>
 
 struct PositionCommand {
     double joint1;
@@ -16,7 +16,7 @@ struct PositionCommand {
     double joint3;
 };
 
- // TCP
+// TCP
 int port;
 std::string ip_address;
 int sock = 0;
@@ -24,19 +24,20 @@ struct sockaddr_in serv_addr;
 void handle_sigint(int);
 // ROS
 double deg2rad(double);
-void publishJointPosition(ros::Publisher, double);
-
+void publishJointPosition(rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr, double);
 
 int main(int argc, char *argv[])
 {
 // ROS
     // initialize as node
-    ros::init(argc, argv, "brachiograph_controller");
+    rclcpp::init(argc, argv);
+    auto node = rclcpp::Node::make_shared("brachiograph_controller");
 
     // get parameters
-    ros::NodeHandle nh_param("~");
-    nh_param.getParam("port", port);
-    nh_param.getParam("ip_address", ip_address);
+    node->declare_parameter("port");
+    node->declare_parameter("ip_address");
+    node->get_parameter("port", port);
+    node->get_parameter("ip_address", ip_address);
 
 // TCP
     std::cerr << "\nStarting at " << ip_address << ":" << port << std::endl;
@@ -62,19 +63,16 @@ int main(int argc, char *argv[])
     signal(SIGINT, handle_sigint);
 
 // ROS
-    // create publisher node
-    ros::NodeHandle nh;
-
     // create publisher
-    ros::Publisher pub_joint1 = nh.advertise<std_msgs::Float64>("brachiograph/joint1_position_controller/command", 1000);
-    ros::Publisher pub_joint2 = nh.advertise<std_msgs::Float64>("brachiograph/joint2_position_controller/command", 1000);
-    ros::Publisher pub_joint3 = nh.advertise<std_msgs::Float64>("brachiograph/joint3_position_controller/command", 1000);
+    auto pub_joint1 = node->create_publisher<std_msgs::msg::Float64>("brachiograph/joint1_position_controller/command", 10);
+    auto pub_joint2 = node->create_publisher<std_msgs::msg::Float64>("brachiograph/joint2_position_controller/command", 10);
+    auto pub_joint3 = node->create_publisher<std_msgs::msg::Float64>("brachiograph/joint3_position_controller/command", 10);
 
     // publish loop at 10Hz
-    ros::Rate rate(10);
+    rclcpp::Rate rate(10);
     PositionCommand command;
-    
-    while(ros::ok()) {
+
+    while(rclcpp::ok()) {
         ssize_t bytesRead = read(sock, &command, sizeof(command));
         if (bytesRead == -1) {
             std::cerr << "Error reading from socket" << std::endl;
@@ -85,28 +83,28 @@ int main(int argc, char *argv[])
                 << command.joint1 << ", " 
                 << command.joint2 << ", " 
                 << command.joint3 << std::endl;
-        
+
         publishJointPosition(pub_joint1, command.joint1);
         publishJointPosition(pub_joint2, command.joint2);
         publishJointPosition(pub_joint3, command.joint3);
 
-        ros::spinOnce(); // let ROS process incoming messages
+        rclcpp::spin_some(node); // let ROS process incoming messages
         // rate.sleep(); // sleep until the next cycle
     }
 
+    rclcpp::shutdown();
     return 0;
 }
-
 
 // ROS
 double deg2rad(double degrees) {
     return degrees * M_PI / 180.0;
 }
 
-void publishJointPosition(ros::Publisher pub, double degrees) {
-    std_msgs::Float64 msg;
+void publishJointPosition(rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr pub, double degrees) {
+    auto msg = std_msgs::msg::Float64();
     msg.data = deg2rad(degrees); // convert to radians
-    pub.publish(msg);
+    pub->publish(msg);
 }
 
 // TCP
