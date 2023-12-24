@@ -1,34 +1,45 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 50  # Hz
+
 brachiograph:
   # Publish all joint states -----------------------------------
-  joint_state_controller:
-    type: joint_state_controller/JointStateController
-    publish_rate: 50
+  joint_state_broadcaster:
+    type: joint_state_broadcaster/JointStateBroadcaster
+    # publish_rate: 50 # deprecated in ros2
 
   # Position Controllers --------------------------------------
   joint1_position_controller:
-    type: position_controllers/JointPositionController
+    type: joint_position_controller/JointPositionController
     joint: joint1
-    pid: {p: 100.0, i: 0.01, d: 10.0}
+    control_parameters: {p: 100.0, i: 0.01, d: 10.0}
   joint2_position_controller:
-    type: position_controllers/JointPositionController
+    type: joint_position_controller/JointPositionController
     joint: joint2
-    pid: {p: 100.0, i: 0.01, d: 10.0}
+    control_parameters: {p: 100.0, i: 0.01, d: 10.0}
   joint3_position_controller:
-    type: position_controllers/JointPositionController
+    type: joint_position_controller/JointPositionController
     joint: joint3
-    pid: {p: 100.0, i: 0.01, d: 10.0}
+    control_parameters: {p: 100.0, i: 0.01, d: 10.0}
 
-  # gazebo_ros_control:   
-  #   pid_gains:
-  #     joint1:
-  #       p: 100.0
-  #       i: 0.01 
-  #       d: 10.0
-  #     joint2:
-  #       p: 100.0
-  #       i: 0.01 
-  #       d: 10.0
-  #     joint2:
-  #       p: 100.0
-  #       i: 0.01 
-  #       d: 10.0
+  # Hardware Interfaces ---------------------------------------
+  ros__parameters:
+  joints:
+    - joint1
+    - joint2
+    - joint3
+  joint1:
+    hardware_interface: position
+    actuator: joint1_actr
+    transmission: joint1_tran
+    mechanical_reduction: 1.0
+  joint2:
+    hardware_interface: position
+    actuator: joint2_actr
+    transmission: joint2_tran
+    mechanical_reduction: 1.0
+  joint3:
+    hardware_interface: position
+    actuator: joint3_actr
+    transmission: joint3_tran
+    mechanical_reduction: 1.0

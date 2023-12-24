@@ -3,11 +3,11 @@
 
     <xacro:property name="body_color" value="Gazebo/Silver"/>
 
-    <!-- ros_control plugin -->
+    <!-- ros2_control plugin -->
     <gazebo>
-    <plugin name="ros_control" filename="libgazebo_ros_control.so">
+    <plugin name="ros2_control" filename="libgazebo_ros2_control.so">
         <robotNamespace>/brachiograph</robotNamespace>
-        <!-- <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType> -->
+        <!-- <robotSimType>gazebo_ros2_control/DefaultRobotHWSim</robotSimType> -->
     </plugin>
     </gazebo>
 
