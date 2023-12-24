@@ -5,7 +5,7 @@ CXX = g++
 CXXFLAGS = -std=c++11 -Wall
 
 # Source files
-SRCS = joint_position_sender.cpp joint_position_receiver.cpp
+SRCS = joint_position_sender.cpp joint_position_receiver.cpp joint_server.cpp joint_client.cpp
 
 # Object files
 OBJS = $(SRCS:.cpp=.o)
