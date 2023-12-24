@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <string.h>
+#include <arpa/inet.h>
 
 // Structs
 struct PositionCommand {
@@ -68,6 +69,21 @@ int main() {
         std::cerr << "Accept failed" << std::endl;
         exit(EXIT_FAILURE);
     }
+
+    // Print the server address
+    char ipstr[INET6_ADDRSTRLEN];
+    int port;
+    if (address.sin_family == AF_INET) {
+        struct sockaddr_in *s = (struct sockaddr_in *)&address;
+        port = ntohs(s->sin_port);
+        inet_ntop(AF_INET, &s->sin_addr, ipstr, sizeof ipstr);
+    } else { // AF_INET6
+        struct sockaddr_in6 *s = (struct sockaddr_in6 *)&address;
+        port = ntohs(s->sin6_port);
+        inet_ntop(AF_INET6, &s->sin6_addr, ipstr, sizeof ipstr);
+    }
+    std::cout << "Server address: " << ipstr << ":" << port << std::endl;
+
 
     signal(SIGINT, handle_sigint);
 

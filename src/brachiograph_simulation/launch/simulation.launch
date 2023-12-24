@@ -1,4 +1,8 @@
 <launch>
+  <arg name="launch_controller" default="true"/>
+  <arg name="ip_address" default="172.0.0.1"/>
+  <arg name="port" default="8080"/>
+
   <!-- Launch gazebo -->
   <include file="$(find brachiograph_description)/launch/gazebo.launch"/>
 
@@ -6,6 +10,9 @@
   <include file="$(find brachiograph_description)/launch/controller.launch"/>
 
   <!-- Run joint controller program -->
-  <!-- <node name="joint_controller" pkg="brachiograph_simulation" type="joint_controller" output="screen"/> -->
+  <node if="$(arg launch_controller)" name="joint_controller" pkg="brachiograph_simulation" type="joint_controller" output="screen">
+    <param name="ip_address" value="$(arg ip_address)"/>
+    <param name="port" value="$(arg port)"/>
+  </node>
 
 </launch>

@@ -1,11 +1,9 @@
-// TCP
+// FIFO
 #include <iostream>
-#include <sys/socket.h>
-#include <netinet/in.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <signal.h>
-#include <string.h>
-#include <arpa/inet.h>
 // ROS
 #include <ros/ros.h>
 #include <std_msgs/Float64.h>
@@ -16,53 +14,28 @@ struct PositionCommand {
     double joint3;
 };
 
- // TCP
-int port;
-std::string ip_address;
-int sock = 0;
-struct sockaddr_in serv_addr;
+ // FIFO
+int fifoFd;
+const char* fifoPath = "/tmp/brachiograph_fifo";
 void handle_sigint(int);
 // ROS
 double deg2rad(double);
 void publishJointPosition(ros::Publisher, double);
 
 
-int main(int argc, char *argv[])
+int main(int argc, char **argv)
 {
-// ROS
-    // initialize as node
-    ros::init(argc, argv, "brachiograph_controller");
-
-    // get parameters
-    ros::NodeHandle nh_param("~");
-    nh_param.getParam("port", port);
-    nh_param.getParam("ip_address", ip_address);
-
-// TCP
-    std::cerr << "\nStarting at " << ip_address << ":" << port << std::endl;
-
-    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        std::cerr << "Socket creation error" << std::endl;
-        return -1;
+// FIFO
+    int fifoFd = open(fifoPath, O_RDONLY);
+    if (fifoFd == -1) {
+        std::cerr << "Error opening FIFO for reading" << std::endl;
+        return 1;
     }
-
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(port);
-
-    if(inet_pton(AF_INET, ip_address.c_str(), &serv_addr.sin_addr) <= 0) {
-        std::cerr << "Invalid address / Address not supported" << std::endl;
-        return -1;
-    }
-
-    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-        std::cerr << "Connection failed" << std::endl;
-        return -1;
-    }
-
     signal(SIGINT, handle_sigint);
 
 // ROS
-    // create publisher node
+    // initialize as node
+    ros::init(argc, argv, "brachiograph_controller");
     ros::NodeHandle nh;
 
     // create publisher
@@ -75,9 +48,9 @@ int main(int argc, char *argv[])
     PositionCommand command;
     
     while(ros::ok()) {
-        ssize_t bytesRead = read(sock, &command, sizeof(command));
+        ssize_t bytesRead = read(fifoFd, &command, sizeof(command));
         if (bytesRead == -1) {
-            std::cerr << "Error reading from socket" << std::endl;
+            std::cerr << "Error reading from FIFO" << std::endl;
             break;
         }
 
@@ -109,8 +82,8 @@ void publishJointPosition(ros::Publisher pub, double degrees) {
     pub.publish(msg);
 }
 
-// TCP
+// FIFO
 void handle_sigint(int sig) {
-    close(sock);
+    close(fifoFd);
     exit(0);
 }
