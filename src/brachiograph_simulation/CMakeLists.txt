@@ -1,16 +1,27 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(brachiograph_simulation)
 
-find_package(catkin REQUIRED COMPONENTS
-    roscpp
-    std_msgs
-)
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
 
-catkin_package()
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
 
-include_directories(
-    ${catkin_INCLUDE_DIRS}
-)
+# find dependencies
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+
+include_directories(include)
 
 add_executable(joint_controller src/joint_controller.cpp)
-target_link_libraries(joint_controller ${catkin_LIBRARIES})
+ament_target_dependencies(joint_controller rclcpp std_msgs)
+
+install(TARGETS
+  joint_controller
+  DESTINATION lib/${PROJECT_NAME})
+
+ament_package()
