@@ -1,3 +1,4 @@
+<!-- Deprecated -->
 <launch>
   <arg name="model" default="$(find brachiograph_description)/urdf/brachiograph.xacro"/>
   <arg name="gui" default="true"/>

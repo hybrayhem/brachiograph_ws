@@ -1,18 +1,30 @@
-<launch>
-  <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="paused" value="false"/>
-    <arg name="use_sim_time" value="true"/>
-    <arg name="gui" value="true"/>
-    <arg name="headless" value="false"/>
-    <arg name="debug" value="false"/>
-  </include>
+from launch import LaunchDescription
+from launch_ros.actions import Node
+from launch.actions import ExecuteProcess
+from ament_index_python.packages import get_package_share_directory
+import os
 
-  <!-- Load the URDF into the ROS Parameter Server -->
-  <param name="robot_description"
-    command="$(find xacro)/xacro --inorder '$(find brachiograph_description)/urdf/brachiograph.xacro'" />
-  
-  <!-- Call spawn_model service from gazebo_ros to spawn a URDF robot -->
-  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
-    args="-urdf -model brachiograph -param robot_description"/>
-    
-</launch>
+def generate_launch_description():
+  gazebo_ros_share_path = get_package_share_directory('gazebo_ros')
+  brachiograph_description_share_path = get_package_share_directory('brachiograph_description')
+
+  return LaunchDescription([
+    ExecuteProcess(
+      cmd=['gazebo', '--verbose', '-s', 'libgazebo_ros_factory.so', '-s', 'libgazebo_ros_init.so'],
+      output='screen'
+    ),
+    # Publish the static transforms from the URDF
+    Node(
+      package='robot_state_publisher',
+      executable='robot_state_publisher',
+      output='screen',
+      parameters=[os.path.join(brachiograph_description_share_path, 'urdf', 'brachiograph.xacro')]
+    ),
+    # Call spawn_model service from gazebo_ros to spawn a URDF robot
+    Node(
+      package='gazebo_ros',
+      executable='spawn_entity.py',
+      arguments=['-entity', 'brachiograph', '-file', os.path.join(brachiograph_description_share_path, 'urdf', 'brachiograph.xacro')],
+      output='screen'
+    )
+  ])

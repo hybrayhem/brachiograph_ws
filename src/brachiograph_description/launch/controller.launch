@@ -1,22 +1,28 @@
-<launch>
+from launch import LaunchDescription
+from launch_ros.actions import Node
+from launch.actions import SetEnvironmentVariable
+from ament_index_python.packages import get_package_share_directory
+import os
 
-  <!-- Load joint controller configurations from YAML file to parameter server -->
-  <rosparam file="$(find brachiograph_description)/config/controller.yaml" command="load"/> <!-- ns="brachiograph" -->
+def generate_launch_description():
+      brachiograph_description_share_path = get_package_share_directory('brachiograph_description')
 
-  <!-- load the controllers -->
-  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
-        output="screen" ns="/brachiograph" args="joint_state_controller
-                                                 joint1_position_controller 
-                                                 joint2_position_controller 
-                                                 joint3_position_controller"/>
-
-  <!-- convert joint states to TF transforms for rviz, etc -->
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" 
-        respawn="false" output="screen">
-    <remap from="/joint_states" to="/brachiograph/joint_states"/>
-  </node>
-
-  <!-- From Polar Arm: -->
-  <!-- <node name="ros_control_controller_manager" pkg="controller_manager" type="controller_manager" 
-        respawn="false" output="screen" args="load joint_group_position_controller"/> -->
-</launch>
+      return LaunchDescription([
+            SetEnvironmentVariable('PYTHONUNBUFFERED', '1'),
+            Node(
+                  package='controller_manager',
+                  executable='ros2_control_node',
+                  parameters=[os.path.join(brachiograph_description_share_path, 'config', 'controller.yaml')],
+                  output={
+                        'stdout': 'screen',
+                        'stderr': 'screen',
+                  },
+            ),
+            Node(
+                  package='robot_state_publisher',
+                  executable='robot_state_publisher',
+                  output='screen',
+                  parameters=[os.path.join(brachiograph_description_share_path, 'urdf', 'brachiograph.xacro')],
+                  remappings=[('/joint_states', '/brachiograph/joint_states')]
+            ),
+      ])
