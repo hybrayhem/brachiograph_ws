@@ -17,18 +17,21 @@ struct PositionCommand {
 };
 
  // TCP
-int port;
-std::string ip_address;
-int sock = 0;
-struct sockaddr_in serv_addr;
+int serverSocket;
 void handle_sigint(int);
+void printServerAddress(const sockaddr_in&);
+
 // ROS
+int port = 8080; // default = 8080
+std::string ip_address; // default = any
 double deg2rad(double);
 void publishJointPosition(ros::Publisher, double);
 
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
+    // Signal handlers
+    signal(SIGINT, handle_sigint);
+
 // ROS
     // initialize as node
     ros::init(argc, argv, "brachiograph_controller");
@@ -38,28 +41,34 @@ int main(int argc, char *argv[])
     nh_param.getParam("port", port);
     nh_param.getParam("ip_address", ip_address);
 
+    std::cerr << "\nparams: " << ip_address << ", " << port << std::endl;
+
 // TCP
-    std::cerr << "\nStarting at " << ip_address << ":" << port << std::endl;
-
-    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    if ((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         std::cerr << "Socket creation error" << std::endl;
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(port);
+    sockaddr_in serverAddress;
+    serverAddress.sin_family = AF_INET;
+    serverAddress.sin_port = htons(port);
 
-    if(inet_pton(AF_INET, ip_address.c_str(), &serv_addr.sin_addr) <= 0) {
-        std::cerr << "Invalid address / Address not supported" << std::endl;
-        return -1;
+    if(inet_pton(AF_INET, ip_address.c_str(), &serverAddress.sin_addr) > 0) {
+        std::cerr << "\nServer address = " << ip_address << ":" << port << std::endl;
+    } else {
+        std::cerr << "Setting ip adress to ANY" << std::endl;
+        serverAddress.sin_addr.s_addr = INADDR_ANY;
     }
 
-    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0) {
-        std::cerr << "Connection failed" << std::endl;
-        return -1;
+    if (bind(serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0) {
+        std::cerr << "Error binding socket" << std::endl;
+        exit(EXIT_FAILURE);
     }
 
-    signal(SIGINT, handle_sigint);
+    if (listen(serverSocket, 1) < 0) {
+        std::cerr << "Error listening on socket" << std::endl;
+        exit(EXIT_FAILURE);
+    }
 
 // ROS
     // create publisher node
@@ -72,26 +81,46 @@ int main(int argc, char *argv[])
 
     // publish loop at 10Hz
     ros::Rate rate(10);
-    PositionCommand command;
-    
-    while(ros::ok()) {
-        ssize_t bytesRead = read(sock, &command, sizeof(command));
-        if (bytesRead == -1) {
-            std::cerr << "Error reading from socket" << std::endl;
-            break;
+
+    while (ros::ok()) {
+// TCP
+        int clientSocket = accept(serverSocket, NULL, NULL);
+        if (clientSocket < 0) {
+            std::cerr << "Accepting client failed, retrying..." << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        printServerAddress(serverAddress); // For debug
+
+        while(ros::ok()) {
+            PositionCommand command;
+            
+            ssize_t bytesRead = recv(clientSocket, &command, sizeof(command), 0);
+            if (bytesRead == 0) {
+                std::cout << "Client disconnected" << std::endl;
+                break;
+            } else if (bytesRead == -1) {
+                std::cerr << "Error reading from client" << std::endl;
+                break;
+            }
+// ROS
+            std::cout << "Received PositionCommand: "
+                    << command.joint1 << ", " 
+                    << command.joint2 << ", " 
+                    << command.joint3 << std::endl;
+            
+            publishJointPosition(pub_joint1, command.joint1);
+            publishJointPosition(pub_joint2, command.joint2);
+            publishJointPosition(pub_joint3, command.joint3);
+
+            ros::spinOnce(); // let ROS process incoming messages
+            // rate.sleep(); // sleep until the next cycle
         }
 
-        std::cout << "Received PositionCommand: " 
-                << command.joint1 << ", " 
-                << command.joint2 << ", " 
-                << command.joint3 << std::endl;
-        
-        publishJointPosition(pub_joint1, command.joint1);
-        publishJointPosition(pub_joint2, command.joint2);
-        publishJointPosition(pub_joint3, command.joint3);
+        close(clientSocket);
+    }
 
-        ros::spinOnce(); // let ROS process incoming messages
-        // rate.sleep(); // sleep until the next cycle
+    if (!ros::ok()) {
+        std::cerr << "ROS is not ok." << std::endl;
     }
 
     return 0;
@@ -111,6 +140,13 @@ void publishJointPosition(ros::Publisher pub, double degrees) {
 
 // TCP
 void handle_sigint(int sig) {
-    close(sock);
+    close(serverSocket);
     exit(0);
+}
+
+void printServerAddress(const sockaddr_in& serverAddress) {
+    char ipstr[INET_ADDRSTRLEN];
+    int port = ntohs(serverAddress.sin_port);
+    inet_ntop(AF_INET, &serverAddress.sin_addr, ipstr, sizeof(ipstr));
+    std::cout << "Server running at: " << ipstr << ":" << port << std::endl;
 }

@@ -1,6 +1,6 @@
 <launch>
   <arg name="launch_controller" default="true"/>
-  <arg name="ip_address" default="172.0.0.1"/>
+  <arg name="ip_address" default=""/>
   <arg name="port" default="8080"/>
 
   <!-- Launch gazebo -->
