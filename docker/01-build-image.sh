@@ -18,5 +18,5 @@ image2="theasp/novnc"
 
 # Check if the images exist
 if [ "$rebuild" != "false" ] || [ -z "$(docker images -q $image1)" ] || [ -z "$(docker images -q $image2)" ]; then
-    docker-compose build
+    docker-compose build #--no-cache
 fi

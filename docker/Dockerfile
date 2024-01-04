@@ -4,7 +4,7 @@ FROM ros:noetic-ros-base-focal
 # Set default shell
 SHELL ["/bin/bash", "-c"]
 
-# Install ros tools
+# ----------------------------- Install ros tools ---------------------------- #
 RUN apt update && apt install -y \
     git \
     ros-noetic-rviz \
@@ -12,13 +12,13 @@ RUN apt update && apt install -y \
     ros-noetic-catkin \
     && rm -rf /var/lib/apt/lists/*
 
-# Install gazebo
+# ------------------------------ Install gazebo ------------------------------ #
 RUN apt update && apt install -y \
     ros-noetic-gazebo-ros \
     ros-noetic-gazebo-ros-control \
     && rm -rf /var/lib/apt/lists/*
 
-# Install project dependencies
+# ----------------------- Install project dependencies ----------------------- #
 RUN apt update && apt install -y \
     ros-noetic-controller-manager \
     ros-noetic-position-controllers \
@@ -29,20 +29,26 @@ RUN apt update && apt install -y \
     ros-noetic-joint-state-publisher-gui \
     && rm -rf /var/lib/apt/lists/*
 
+# ---------------------------------------------------------------------------- #
+#                     Clone and Setup The Catkin Workspace                     #
+# ---------------------------------------------------------------------------- #
 # Prepare rosdep
 RUN rosdep update
 
 # Source ros
 # RUN echo "source /opt/ros/noetic/setup.bash" >> /root/.bashrc # Already done in ros:noetic-ros-base-focal
 
-# Clone and setup the catkin workspace
+# Clone or copy the workspace
 RUN cd /root && git clone https://github.com/hybrayhem/brachiograph_ws.git
+
+# Build the workspace
 WORKDIR /root/brachiograph_ws
 RUN rosdep install --from-paths src --ignore-src -r -y
 RUN source /opt/ros/noetic/setup.bash && catkin_make
 RUN echo "source /root/brachiograph_ws/devel/setup.bash" >> /root/.bashrc
 
-# CMD ["/bin/bash"]
-# CMD [ "/app/start.sh" ]
+
+# -------------------------------- Launch -------------------------------- #
 COPY start.sh /app/start.sh
 ENTRYPOINT [ "/app/start.sh" ]
+# or CMD [ "/app/start.sh" ]

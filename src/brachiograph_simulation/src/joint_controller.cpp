@@ -78,6 +78,7 @@ int main(int argc, char *argv[]) {
     ros::Publisher pub_joint1 = nh.advertise<std_msgs::Float64>("brachiograph/joint1_position_controller/command", 1000);
     ros::Publisher pub_joint2 = nh.advertise<std_msgs::Float64>("brachiograph/joint2_position_controller/command", 1000);
     ros::Publisher pub_joint3 = nh.advertise<std_msgs::Float64>("brachiograph/joint3_position_controller/command", 1000);
+    std::vector<ros::Publisher> publishers = {pub_joint1, pub_joint2, pub_joint3};
 
     // publish loop at 10Hz
     ros::Rate rate(10);
@@ -130,6 +131,15 @@ int main(int argc, char *argv[]) {
 // ROS
 double deg2rad(double degrees) {
     return degrees * M_PI / 180.0;
+}
+
+void publishAllJointPositions(std::vector<ros::Publisher> pubs, PositionCommand command) {
+    publishJointPosition(pubs[0], command.joint1);
+    publishJointPosition(pubs[1], command.joint2);
+
+    double joint3 = command.joint3;
+    joint3 > 1500 ? joint3 = 0 : joint3 = -63;
+    publishJointPosition(pubs[2], joint3);
 }
 
 void publishJointPosition(ros::Publisher pub, double degrees) {

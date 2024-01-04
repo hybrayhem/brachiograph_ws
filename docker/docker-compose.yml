@@ -30,6 +30,11 @@ services:
     tty: true
     stdin_open: true
     # restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "rosnode list | grep gazebo"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
   
   novnc:
     image: theasp/novnc:latest
@@ -39,6 +44,12 @@ services:
     networks:
       - x11
     environment:
-      - DISPLAY_WIDTH=1600
-      - DISPLAY_HEIGHT=1000
-    restart: on-failure
+      - DISPLAY_WIDTH=960
+      - DISPLAY_HEIGHT=540
+      - RUN_XTERM=no
+      - RUN_FLUXBOX=no
+    # restart: on-failure
+    # command: ["rm -rf /tmp/{*,.*}", "/app/entrypoint.sh"] # # novnc sometimes fails on x11, fixed with this
+    depends_on:
+      ros-noetic-and-gazebo:
+        condition: service_healthy
