@@ -39,14 +39,14 @@ RUN rosdep update
 # RUN echo "source /opt/ros/noetic/setup.bash" >> /root/.bashrc # Already done in ros:noetic-ros-base-focal
 
 # Clone or copy the workspace
-RUN cd /root && git clone https://github.com/hybrayhem/brachiograph_ws.git && echo "abc"
+RUN echo "Invalidate cache" $(date)
+RUN cd /root && git clone https://github.com/hybrayhem/brachiograph_ws.git
 
 # Build the workspace
 WORKDIR /root/brachiograph_ws
 RUN rosdep install --from-paths src --ignore-src -r -y
 RUN source /opt/ros/noetic/setup.bash && catkin_make
 RUN echo "source /root/brachiograph_ws/devel/setup.bash" >> /root/.bashrc
-
 
 # -------------------------------- Launch -------------------------------- #
 COPY start.sh /app/start.sh
