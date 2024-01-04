@@ -15,6 +15,7 @@ struct PositionCommand {
     double joint2;
     double joint3;
 };
+const struct PositionCommand homePosition = {-90, 90, 0};
 
  // TCP
 int serverSocket;
@@ -26,6 +27,7 @@ int port = 8080; // default = 8080
 std::string ip_address; // default = any
 double deg2rad(double);
 void publishJointPosition(ros::Publisher, double);
+void publishAllJointPositions(std::vector<ros::Publisher>, PositionCommand);
 
 
 int main(int argc, char *argv[]) {
@@ -109,9 +111,7 @@ int main(int argc, char *argv[]) {
                     << command.joint2 << ", " 
                     << command.joint3 << std::endl;
             
-            publishJointPosition(pub_joint1, command.joint1);
-            publishJointPosition(pub_joint2, command.joint2);
-            publishJointPosition(pub_joint3, command.joint3);
+            publishAllJointPositions(publishers, command);
 
             ros::spinOnce(); // let ROS process incoming messages
             // rate.sleep(); // sleep until the next cycle
@@ -133,19 +133,20 @@ double deg2rad(double degrees) {
     return degrees * M_PI / 180.0;
 }
 
-void publishAllJointPositions(std::vector<ros::Publisher> pubs, PositionCommand command) {
-    publishJointPosition(pubs[0], command.joint1);
-    publishJointPosition(pubs[1], command.joint2);
-
-    double joint3 = command.joint3;
-    joint3 > 1500 ? joint3 = 0 : joint3 = -63;
-    publishJointPosition(pubs[2], joint3);
-}
-
 void publishJointPosition(ros::Publisher pub, double degrees) {
     std_msgs::Float64 msg;
     msg.data = deg2rad(degrees); // convert to radians
     pub.publish(msg);
+}
+
+void publishAllJointPositions(std::vector<ros::Publisher> pubs, PositionCommand command) {
+    publishJointPosition(pubs[0], command.joint1 - homePosition.joint1);
+    publishJointPosition(pubs[1], command.joint2 - homePosition.joint2);
+
+    double joint3 = command.joint3 - homePosition.joint3;
+
+    joint3 > 1500 ? joint3 = 0 : joint3 = -60;
+    publishJointPosition(pubs[2], joint3);
 }
 
 // TCP

@@ -95,17 +95,20 @@ void handle_sigint(int sig) {
 }
 
 PositionCommand nextMessage(PositionCommand message, JointDirection& direction) {
-    if (message.joint1 >= joint1_upper_limit) direction.direction1 = -1;
-    if (message.joint2 >= joint2_upper_limit) direction.direction2 = -1;
-    if (message.joint3 >= joint3_upper_limit) direction.direction3 = -1;
+    // if (message.joint1 >= joint1_upper_limit) direction.direction1 = -1;
+    // if (message.joint2 >= joint2_upper_limit) direction.direction2 = -1;
+    // if (message.joint3 >= joint3_upper_limit) direction.direction3 = -1;
 
-    if (message.joint1 <= joint1_lower_limit) direction.direction1 = 1;
-    if (message.joint2 <= joint2_lower_limit) direction.direction2 = 1;
-    if (message.joint3 <= joint3_lower_limit) direction.direction3 = 1;
+    // if (message.joint1 <= joint1_lower_limit) direction.direction1 = 1;
+    // if (message.joint2 <= joint2_lower_limit) direction.direction2 = 1;
+    // if (message.joint3 <= joint3_lower_limit) direction.direction3 = 1;
 
-    message.joint1 += (double) direction.direction1;
-    message.joint2 += (double) direction.direction2;
-    message.joint3 += (double) direction.direction3;
+    // message.joint1 += (double) direction.direction1;
+    // message.joint2 += (double) direction.direction2;
+    // message.joint3 += (double) direction.direction3;
+
+    std::cout << "Enter joint1, joint2, joint3 value: ";
+    std::cin >> message.joint1 >> message.joint2 >> message.joint3;
 
     return message;
 }
