@@ -15,7 +15,16 @@ struct PositionCommand {
     double joint2;
     double joint3;
 };
-const struct PositionCommand homePosition = {-90, 90, 0};
+
+struct Direction {
+    int joint1;
+    int joint2;
+    int joint3;
+}
+
+const struct PositionCommand home_pose = {-90, 90, 0};
+const struct Direction directions = {-1, 1, 1};
+
 
  // TCP
 int serverSocket;
@@ -140,12 +149,17 @@ void publishJointPosition(ros::Publisher pub, double degrees) {
 }
 
 void publishAllJointPositions(std::vector<ros::Publisher> pubs, PositionCommand command) {
-    publishJointPosition(pubs[0], command.joint1 - homePosition.joint1);
-    publishJointPosition(pubs[1], command.joint2 - homePosition.joint2);
+    double joint1 = directions.joint1 * (command.joint1 - home_pose.joint1);
+    double joint2 = directions.joint2 * (command.joint2 - home_pose.joint2);
+    double joint3 = command.joint3 > 1500 ? 0 : -60;
 
-    double joint3 = command.joint3 - homePosition.joint3;
+    std::cout << "Converted PositionCommand: "
+            << joint1 << ", " 
+            << joint2 << ", " 
+            << joint3 << std::endl;
 
-    joint3 > 1500 ? joint3 = 0 : joint3 = -60;
+    publishJointPosition(pubs[0], joint1);
+    publishJointPosition(pubs[1], joint2);
     publishJointPosition(pubs[2], joint3);
 }
 
