@@ -39,7 +39,7 @@ RUN rosdep update
 # RUN echo "source /opt/ros/noetic/setup.bash" >> /root/.bashrc # Already done in ros:noetic-ros-base-focal
 
 # Clone or copy the workspace
-RUN cd /root && git clone https://github.com/hybrayhem/brachiograph_ws.git
+RUN cd /root && git clone https://github.com/hybrayhem/brachiograph_ws.git && echo "abc"
 
 # Build the workspace
 WORKDIR /root/brachiograph_ws

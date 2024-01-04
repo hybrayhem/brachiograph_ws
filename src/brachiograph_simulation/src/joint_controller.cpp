@@ -20,7 +20,7 @@ struct Direction {
     int joint1;
     int joint2;
     int joint3;
-}
+};
 
 const struct PositionCommand home_pose = {-90, 90, 0};
 const struct Direction directions = {-1, 1, 1};
