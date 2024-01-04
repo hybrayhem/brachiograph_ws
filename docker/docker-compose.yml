@@ -33,11 +33,6 @@ services:
     depends_on:
       novnc:
         condition: service_healthy
-    # healthcheck:
-    #   test: ["CMD-SHELL", ". /opt/ros/noetic/setup.sh && rosnode list | grep gazebo"]
-    #   interval: 10s
-    #   timeout: 5s
-    #   retries: 15
   
   novnc:
     image: theasp/novnc:latest
@@ -51,9 +46,6 @@ services:
       - DISPLAY_HEIGHT=1080
       - RUN_XTERM=no
     # restart: on-failure
-    # depends_on:
-    #   ros-noetic-and-gazebo:
-    #     condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "echo noVNC"]
       start_period: 10s
